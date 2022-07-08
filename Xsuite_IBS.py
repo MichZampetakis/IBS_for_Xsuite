@@ -116,7 +116,7 @@ Emitt.append(turn_by_turn['eps_x'])
 Emitt.append(turn_by_turn['eps_y'])
 Emitt.append(turn_by_turn['sig_delta'])
 Emitt.append(turn_by_turn['bl'])
-np.savetxt(r"./xsuite_simple.txt", np.array(Emitt).T.tolist(), fmt="%e")
+np.savetxt(r"./output/xsuite_simple.txt", np.array(Emitt).T.tolist(), fmt="%e")
 
 sys.exit()
 
