@@ -35,6 +35,7 @@ class NagaitsevIBS():
         self.eta_dx = twiss['dpx']
         self.eta_y  = twiss['dy']
         self.eta_dy = twiss['dpy']
+        self.slip   = twiss['slip_factor']
         self.phi_x  = self._Phi(twiss['betx'], twiss['alfx'], twiss['dx'], twiss['dpx'])
         self.frev   = self.betar * c / self.Circu
         bx_b = interp1d(twiss['s'], twiss['betx'])
