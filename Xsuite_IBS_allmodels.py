@@ -68,13 +68,13 @@ n_turns = 1000
 Harmonic_Num = 2852
 Energy_loss = 0
 RF_Voltage = 4.5
+IBS_step = 50.0 # turns to recompute IBS kick
 # ----------------------------------
 
 particles0 = xp.generate_matched_gaussian_bunch(
          num_particles=n_part, total_intensity_particles=bunch_intensity,
          nemitt_x=nemitt_x, nemitt_y=nemitt_y, sigma_z=sigma_z,
          particle_ref=p0, tracker=tracker)
-
 
 for mode in ['kinetic', 'simple', 'analytical']:
   print(f"Model: {mode}")
@@ -85,6 +85,8 @@ for mode in ['kinetic', 'simple', 'analytical']:
   IBS = NagaitsevIBS()
   IBS.set_beam_parameters(particles)
   IBS.set_optic_functions(tw)
+
+  dt = 1./IBS.frev # consecutive turns/frev, used only for analytical, 
   
   #emit = Evaluate_Sigma_Emit(10,20,10,20,20,20)
   #emit.define_bins_width(particles, tw)
@@ -129,11 +131,9 @@ for mode in ['kinetic', 'simple', 'analytical']:
         turn_by_turn['eps_y'][i]     = sig_y**2 / tw['bety'][0] 
       
       if mode == 'analytical':
-        Emit_x, Emit_y, Sig_M, BunchL = turn_by_turn['eps_x'][i-1],turn_by_turn['eps_y'][i-1],turn_by_turn['sig_delta'][i-1],turn_by_turn['bl'][i-1]
-        if (i % 50 == 0) or (i==1):
-             dt = 1./IBS.frev
-             IBS.calculate_integrals(Emit_x, Emit_y, Sig_M, BunchL)
-        Emit_x, Emit_y, Sig_M = IBS.emit_evol(Emit_x, Emit_y, Sig_M, BunchL, dt)
+        if (i % IBS_step == 0) or (i==1):
+             IBS.calculate_integrals(turn_by_turn['eps_x'][i-1],turn_by_turn['eps_y'][i-1],turn_by_turn['sig_delta'][i-1],turn_by_turn['bl'][i-1])
+        Emit_x, Emit_y, Sig_M = IBS.emit_evol(turn_by_turn['eps_x'][i-1],turn_by_turn['eps_y'][i-1],turn_by_turn['sig_delta'][i-1],turn_by_turn['bl'][i-1], dt)
         
         Sigma_E = Sig_M*IBS.betar**2
         BunchL = BunchLength(IBS.Circu, Harmonic_Num, IBS.EnTot, IBS.slip, 
@@ -145,11 +145,11 @@ for mode in ['kinetic', 'simple', 'analytical']:
         turn_by_turn['eps_y'][i]     = Emit_y
   
       elif mode == "kinetic":
-        if (i % 50 == 0) or (i==1):
+        if (i % IBS_step == 0) or (i==1):
              IBS.calculate_kinetic_coefficients(particles)
         IBS.apply_kinetic_kick(particles)
       elif mode == "simple":
-        if (i % 50 == 0) or (i==1):
+        if (i % IBS_step == 0) or (i==1):
             IBS.calculate_simple_kick(particles)
         IBS.apply_simple_kick(particles)
   
