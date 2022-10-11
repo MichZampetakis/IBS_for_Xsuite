@@ -1,5 +1,6 @@
 import numpy as np
 import sys
+import scipy
 import scipy.integrate as integrate
 from scipy.interpolate import interp1d
 from scipy.constants import c, hbar, m_e
@@ -22,7 +23,11 @@ class NagaitsevIBS():
         self.E_rest = particles.mass0 * 1e-9
         self.gammar = particles.gamma0[0]
         self.betar  = particles.beta0[0]
-        self.c_rad  = physical_constants["classical electron radius"][0]
+        #self.c_rad  = physical_constants["classical electron radius"][0]
+        E0p = physical_constants["proton mass energy equivalent in MeV"][0]*1e-3
+        particle_mass_GEV = particles.mass0 * 1e-9 
+        mi  = (particle_mass_GEV * scipy.constants.m_p) / E0p
+        self.c_rad = (particles.q0 * scipy.constants.e)**2 / (4 * np.pi * scipy.constants.epsilon_0 * scipy.constants.c**2 * mi)
 
     def set_optic_functions(self, twiss):
         self.posit  = twiss['s']
@@ -315,9 +320,9 @@ class NagaitsevIBS():
         rho = self.line_density(40, particles) # number of slices
 
         # !---------- Friction ----------!
-        particles.px[particles.state > 0] -= self.Fx * particles.px[particles.state > 0] * dt * rho     # kick units [1]
-        particles.py[particles.state > 0] -= self.Fy * particles.py[particles.state > 0] * dt * rho     # kick units [1]
-        particles.delta[particles.state > 0] -= self.Fz * particles.delta[particles.state > 0] * dt * rho     # kick units [1]
+        particles.px[particles.state > 0] -= self.Fx * (particles.px[particles.state > 0]-np.mean(particles.px[particles.state > 0]) ) * dt * rho     # kick units [1]
+        particles.py[particles.state > 0] -= self.Fy * (particles.py[particles.state > 0]-np.mean(particles.py[particles.state > 0]) ) * dt * rho     # kick units [1]
+        particles.delta[particles.state > 0] -= self.Fz * (particles.delta[particles.state > 0]-np.mean(particles.delta[particles.state > 0])) * dt * rho     # kick units [1]
                          
         # !---------- Diffusion ----------!
         particles.px[particles.state > 0] += Sig_px_norm * np.sqrt(2 * dt * self.Dx) * Ran1 * np.sqrt(rho)     # kick units [1]
