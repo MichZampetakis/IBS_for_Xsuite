@@ -19,8 +19,8 @@ class NagaitsevIBS():
     def set_beam_parameters(self, particles):
         self.Npart  = particles.weight[0] * particles.gamma0.shape[0]
         self.Ncharg = particles.q0
-        self.EnTot  = particles.p0c[0] * 1e-9
         self.E_rest = particles.mass0 * 1e-9
+        self.EnTot  = np.sqrt(particles.p0c[0]**2 + particles.mass0**2) * 1e-9
         self.gammar = particles.gamma0[0]
         self.betar  = particles.beta0[0]
         #self.c_rad  = physical_constants["classical electron radius"][0]
