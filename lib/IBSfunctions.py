@@ -13,7 +13,7 @@ from lib.general_functions import *
 
 
 class NagaitsevIBS:
-    """A class to encapsulate IBS calculation according to the Nagaitsev formalism."""
+    """A class to encapsulate IBS calculations according to the Nagaitsev formalism."""
 
     def __init__(self, *args, **kwargs):
         # TODO: some work here, should probably initiate with a twiss or the line
@@ -306,7 +306,7 @@ class NagaitsevIBS:
 
     # ! ~~~~~~~~~~~~~~~~ Kinetic Kicks ~~~~~~~~~~~~~~~~~~ !
     def Kinetic_Coefficients(self, Emit_x, Emit_y, Sig_M, BunchL) -> Tuple[float, float, float, float, float, float]:
-        """Computes the kinectic coefficients based on emittances."""
+        """Computes the kinetic coefficients based on emittances."""
         const = self.CoulogConst(Emit_x, Emit_y, Sig_M, BunchL)
         sigx = np.sqrt(self.bet_x * Emit_x + (self.eta_x * Sig_M) ** 2)
         sigy = np.sqrt(self.bet_y * Emit_y + (self.eta_y * Sig_M) ** 2)
@@ -371,7 +371,7 @@ class NagaitsevIBS:
 
     # Run to calculate and save the kinetic coefficients; to be used for the kinetic kick
     def calculate_kinetic_coefficients(self, particles) -> None:
-        """Computes the kinectic coefficients based on emittances and stores them in the instance itself."""
+        """Computes the kinetic coefficients based on emittances and stores them in the instance itself."""
         Sig_x = np.std(particles.x[particles.state > 0])
         Sig_y = np.std(particles.y[particles.state > 0])
         Sig_zeta = np.std(particles.zeta[particles.state > 0])
@@ -386,7 +386,7 @@ class NagaitsevIBS:
 
     # Run to apply the kinetic kick.
     def apply_kinetic_kick(self, particles) -> None:
-        """Applies the kinectic coefficients based on emittances (via method above) to the particle objects."""
+        """Applies the kinetic coefficients based on emittances (via method above) to the particle objects."""
         dt = 1 / self.frev  # needs to be changed.
         Ran1 = np.random.normal(loc=0, scale=1, size=particles.px[particles.state > 0].shape[0])
         Ran2 = np.random.normal(loc=0, scale=1, size=particles.py[particles.state > 0].shape[0])
