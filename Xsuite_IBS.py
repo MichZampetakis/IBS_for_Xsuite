@@ -1,14 +1,15 @@
-import sys
 import json
+import sys
+
+import matplotlib.pyplot as plt
 import numpy as np
 import xobjects as xo
-import xtrack as xt
 import xpart as xp
-import matplotlib.pyplot as plt
-
+import xtrack as xt
 from cpymad.madx import Madx
 from scipy.constants import e as qe
-from scipy.constants import m_p, m_e
+from scipy.constants import m_e, m_p
+
 #from lib.Xsuite_eval_emit_sig import *
 #from lib.general_functions import *
 from lib.IBSfunctions import *
