@@ -19,7 +19,7 @@ class Records:
     epsilon_x: np.ndarray
     epsilon_y: np.ndarray
     sig_delta: np.ndarray
-    bl: np.ndarray
+    bunch_length: np.ndarray
 
 
 @click.command(context_settings=dict(help_option_names=["-h", "--help"]))
@@ -105,7 +105,7 @@ def main(nturns: int, sequence: Path, line: Path, model: str, outputdir: Path) -
         epsilon_x=np.zeros(nturns, dtype=float),
         epsilon_y=np.zeros(nturns, dtype=float),
         sig_delta=np.zeros(nturns, dtype=float),
-        bl=np.zeros(nturns, dtype=float),
+        bunch_length=np.zeros(nturns, dtype=float),
     )
 
     # ----- Tracking ----- #
@@ -115,11 +115,11 @@ def main(nturns: int, sequence: Path, line: Path, model: str, outputdir: Path) -
         sig_x = np.std(particles.x[particles.state > 0])
         sig_y = np.std(particles.y[particles.state > 0])
         sig_delta = np.std(particles.delta[particles.state > 0])
-        turn_by_turn.bl[turn] = np.std(particles.zeta[particles.state > 0])
+        turn_by_turn.bunch_length[turn] = np.std(particles.zeta[particles.state > 0])
         turn_by_turn.sig_delta[turn] = sig_delta
         turn_by_turn.epsilon_x[turn] = (sig_x**2 - (twiss["dx"][0] * sig_delta) ** 2) / twiss["betx"][0]
         turn_by_turn.epsilon_y[turn] = sig_y**2 / twiss["bety"][0]
-        # turn_by_turn.epsilon_x[turn], turn_by_turn.epsilon_y[turn], turn_by_turn.sig_delta[turn], turn_by_turn.bl[turn] = emit.eval_emits(particles)
+        # turn_by_turn.epsilon_x[turn], turn_by_turn.epsilon_y[turn], turn_by_turn.sig_delta[turn], turn_by_turn.bunch_length[turn] = emit.eval_emits(particles)
 
         if turn % 50 == 0:
             logger.debug(
@@ -147,7 +147,7 @@ def main(nturns: int, sequence: Path, line: Path, model: str, outputdir: Path) -
         epsilon_x=turn_by_turn.epsilon_x,
         epsilon_y=turn_by_turn.epsilon_y,
         sig_delta=turn_by_turn.sig_delta,
-        bl=turn_by_turn.bl,
+        bunch_length=turn_by_turn.bunch_length,
     )
 
 
