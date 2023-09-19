@@ -99,7 +99,7 @@ def main(nturns: int, sequence: Path, line: Path, outputdir: Path) -> None:
         nemitt_y=nemitt_y,
         sigma_z=sigma_z,
         particle_ref=p0,
-        tracker=tracker,
+        line=line,
     )
     twiss = line.twiss(particle_ref=p0)
 
