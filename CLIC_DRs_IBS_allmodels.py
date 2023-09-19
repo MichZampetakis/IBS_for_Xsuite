@@ -1,7 +1,10 @@
 # IBS example: runs simple kick, kinetic theory and analytical
 import json
 import sys
+from dataclasses import dataclass
+from pathlib import Path
 
+import click
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -9,190 +12,233 @@ import xobjects as xo
 import xpart as xp
 import xtrack as xt
 from cpymad.madx import Madx
-from scipy.constants import e as qe
-from scipy.constants import m_e, m_p
+from loguru import logger
 
-# from lib.Xsuite_eval_emit_sig import *
-# from lib.general_functions import *
 from lib.IBSfunctions import *
 
-## Read a MAD-X Sequence
-n_slice_per_element = 4
-mad = Madx(stdout=False)
-mad.call("./chrom-corr_DR.newlattice_2GHz.seq")
-mad.input(
-    f"""
-beam, particle=positron, energy=2.86, bunched;
-use, sequence=RING;"""
+
+@dataclass
+class Records:
+    """Dataclass to store (and update) important values through tracking."""
+
+    epsilon_x: np.ndarray
+    epsilon_y: np.ndarray
+    sig_delta: np.ndarray
+    bunch_length: np.ndarray
+
+
+@click.command(context_settings=dict(help_option_names=["-h", "--help"]))
+@click.option("--nturns", default=1000, type=int, show_default=True, help="Number of turns to track for.")
+@click.option(
+    "--sequence",
+    required=False,
+    type=click.Path(exists=True, dir_okay=False, path_type=Path),
+    help="Path to a file with the MAD-X sequence to load.",
 )
-twthick = mad.twiss().dframe()
-mad.input(
-    f"""
-select, flag=MAKETHIN, SLICE={n_slice_per_element}, thick=false;
-select, flag=MAKETHIN, pattern=wig, slice=1;
-MAKETHIN, SEQUENCE=ring, MAKEDIPEDGE=true;
-use, sequence=RING;"""
+@click.option(
+    "--line",
+    required=False,
+    type=click.Path(exists=True, dir_okay=False, path_type=Path),
+    help="Path to a JSON file with the line to load.",
 )
-twthin = mad.twiss().dframe()
-line = xt.Line.from_madx_sequence(mad.sequence["RING"])
-
-line.remove_inactive_multipoles(inplace=True)
-line.remove_zero_length_drifts(inplace=True)
-line.merge_consecutive_drifts(inplace=True)
-line.merge_consecutive_multipoles(inplace=True)
-
-# Need to find if the aperture is changed in Xsuite!!!!!! #
-# line.insert_element(idx = 0, # start of the ring
-#                     element = xt.LimitRect(min_x = -0.04, max_x = 0.04, min_y = -0.04, max_y = 0.04),
-#                     name = 'aperture')
-
-## Choose a context
-context = xo.ContextCpu()  # For CPU
-
-## Transfer lattice on context and compile tracking code
-tracker = xt.Tracker(_context=context, line=line, extra_headers=["#define XTRACK_MULTIPOLE_NO_SYNRAD"])
-
-cavs = [ee for ee in line.elements if isinstance(ee, xt.Cavity)]
-for cc in cavs:
-    cc.lag = 180
-    # if cc.voltage > 0:
-    #    cc.voltage = -cc.voltage
-
-p0 = xp.Particles(mass0=xp.ELECTRON_MASS_EV, q0=1, p0c=2.86e9)
-tw = line.twiss(particle_ref=p0)
-
-# ----- Set initial parameters -----
-bunch_intensity = 4.4e9
-sigma_z = 1.58e-3
-# n_part = int(5e3)
-n_part = int(5000)
-nemitt_x = 5.6644e-07
-nemitt_y = 3.7033e-09
-n_turns = 1000
-# mode = 'kinetic' # 'simple', 'analytical'
-Harmonic_Num = 2852
-Energy_loss = 0
-RF_Voltage = 4.5
-IBS_step = 50.0  # turns to recompute IBS kick
-# ----------------------------------
-
-particles0 = xp.generate_matched_gaussian_bunch(
-    num_particles=n_part,
-    total_intensity_particles=bunch_intensity,
-    nemitt_x=nemitt_x,
-    nemitt_y=nemitt_y,
-    sigma_z=sigma_z,
-    particle_ref=p0,
-    tracker=tracker,
+@click.option(
+    "--outputdir",
+    type=click.Path(exists=True, file_okay=False, path_type=Path),
+    default=".",
+    show_default=True,
+    help="Folder in which to write the output data.",
 )
+def main(nturns: int, sequence: Path, line: Path, outputdir: Path) -> None:
+    """Main program flow."""
+    # ----- Create xtrack Line ----- #
+    logger.info("Creating Line for tracking")
+    if not sequence and not line:
+        raise ValueError("At least one of the MAD-X sequence or line JSON is required")
+    if sequence and not line:
+        line: xt.Line = line_from_madx(sequence.absolute())
+    else:  # we have the line
+        if sequence:  # but also the sequence
+            logger.debug("Both MAD-X sequence and JSON line file provided, prioritizing the line")
+        line: xt.Line = line_from_json(line.absolute())
 
-for mode in ["kinetic", "simple", "analytical"]:
-    print(f"Model: {mode}")
+    # ----- Line optimizations ----- #
+    logger.info("Optimizing line before tracking")
+    line.remove_inactive_multipoles(inplace=True)
+    line.remove_zero_length_drifts(inplace=True)
+    line.merge_consecutive_drifts(inplace=True)
+    line.merge_consecutive_multipoles(inplace=True)
 
-    particles = particles0.copy()
+    # ----- Choose context and build tracker ----- #
+    logger.info("Compiling kernels")
+    context = xo.ContextCpu()  # For CPU
+    tracker = line.build_tracker(_context=context, extra_headers=["#define XTRACK_MULTIPOLE_NO_SYNRAD"])
 
-    # ----- Initialize IBS -----
-    IBS = NagaitsevIBS()
-    IBS.set_beam_parameters(particles)
-    IBS.set_optic_functions(tw)
+    # ----- Prepare acceleration ----- #
+    logger.info("Activating cavities")
+    cavities = [element for element in line.elements if isinstance(element, xt.Cavity)]
+    logger.debug(f"Found {len(cavities)} to activate (lag = 180)")
+    for cavity in cavities:
+        cavity.lag = 180
 
-    dt = 1.0 / IBS.frev  # consecutive turns/frev, used only for analytical,
+    # ----- Particles and Twiss ----- #
+    logger.info("Getting line Twiss and generating particles for tracking")
+    bunch_intensity = 4.4e9
+    sigma_z = 1.58e-3
+    n_part = int(5e3)
+    nemitt_x = 5.6644e-07
+    nemitt_y = 3.7033e-09
+    harmonic_number = 2852
+    energy_loss = 0
+    RF_voltage = 4.5
+    IBS_step = 50.0  # recompute IBS kicks every IBS_Step turns
+    p0 = xp.Particles(mass0=xp.ELECTRON_MASS_EV, q0=1, p0c=2.86e9)
+    particles0 = xp.generate_matched_gaussian_bunch(
+        num_particles=n_part,
+        total_intensity_particles=bunch_intensity,
+        nemitt_x=nemitt_x,
+        nemitt_y=nemitt_y,
+        sigma_z=sigma_z,
+        particle_ref=p0,
+        tracker=tracker,
+    )
+    twiss = line.twiss(particle_ref=p0)
 
-    # emit = Evaluate_Sigma_Emit(10,20,10,20,20,20)
-    # emit.define_bins_width(particles, tw)
+    # ----- Main loop ----- #
+    for model in ["kinetic", "simple", "analytical"]:
+        logger.info(f"Performing tracking with IBS model {model}")
 
-    ## Initialize dictionaries
-    turn_by_turn = {}
+        # ----- Initialize particles and IBS ----- #
+        logger.info("Initializing particles and IBS class")
+        particles = particles0.copy()
+        IBS = NagaitsevIBS()
+        IBS.set_beam_parameters(particles)
+        IBS.set_optic_functions(twiss)
 
-    # record_coord = ['x', 'px', 'y', 'py', 'zeta', 'delta', 'state', 'particle_id']
-    # for nn in record_coord:
-    #    turn_by_turn[nn] = np.zeros((n_turns, n_part), dtype = getattr(particles, nn).dtype)
+        dt = 1.0 / IBS.frev  # consecutive turns/frev, used only for analytical,
+        # emit = Evaluate_Sigma_Emit(10,20,10,20,20,20)
+        # emit.define_bins_width(particles, tw)
 
-    record_emit = ["eps_x", "eps_y", "sig_delta", "bl"]
-    for nn in record_emit:
-        turn_by_turn[nn] = np.zeros((n_turns), dtype=float)
+        # ----- Initialze Records at first turn ----- #
+        turn_by_turn = Records(
+            epsilon_x=np.zeros(nturns, dtype=float),
+            epsilon_y=np.zeros(nturns, dtype=float),
+            sig_delta=np.zeros(nturns, dtype=float),
+            bunch_length=np.zeros(nturns, dtype=float),
+        )
 
-    # --- Initialize
-    sig_x = np.std(particles.x[particles.state > 0])
-    sig_y = np.std(particles.y[particles.state > 0])
-    sig_delta = np.std(particles.delta[particles.state > 0])
-    turn_by_turn["bl"][0] = np.std(particles.zeta[particles.state > 0])
-    turn_by_turn["sig_delta"][0] = sig_delta
-    turn_by_turn["eps_x"][0] = (sig_x**2 - (tw["dx"][0] * sig_delta) ** 2) / tw["betx"][0]
-    turn_by_turn["eps_y"][0] = sig_y**2 / tw["bety"][0]
+        sig_x = np.std(particles.x[particles.state > 0])
+        sig_y = np.std(particles.y[particles.state > 0])
+        sig_delta = np.std(particles.delta[particles.state > 0])
+        turn_by_turn.bunch_length[0] = np.std(particles.zeta[particles.state > 0])
+        turn_by_turn.sig_delta[0] = sig_delta
+        turn_by_turn.epsilon_x[0] = (sig_x**2 - (twiss["dx"][0] * sig_delta) ** 2) / twiss["betx"][0]
+        turn_by_turn.epsilon_y[0] = sig_y**2 / twiss["bety"][0]
 
-    for i in range(1, n_turns):
-        # import time
-        # start = time.time()
+        # ----- Tracking ----- #
+        logger.info(f"Stating tracking for {nturns}")
+        for turn in range(1, nturns):  # start at 1 here as we initialized first entry from created particles
+            logger.trace("Computing particle properties")
 
-        print("Turn = ", i)
-        print("N_part = ", len(particles.x[particles.state > 0]))
+            # Calculate properties, different if kicks or analytical
+            if model.lower() != "analytical":  # simple or kinetic
+                sig_x = np.std(particles.x[particles.state > 0])
+                sig_y = np.std(particles.y[particles.state > 0])
+                sig_delta = np.std(particles.delta[particles.state > 0])
+                turn_by_turn.bunch_length[turn] = np.std(particles.zeta[particles.state > 0])
+                turn_by_turn.sig_delta[turn] = sig_delta
+                turn_by_turn.epsilon_x[turn] = (sig_x**2 - (twiss["dx"][0] * sig_delta) ** 2) / twiss[
+                    "betx"
+                ][0]
+                turn_by_turn.epsilon_y[turn] = sig_y**2 / twiss["bety"][0]
 
-        #    for nn in record_coord:
-        #        turn_by_turn[nn][i,:] = getattr(particles, nn)
+            else:  # here model is 'analytical', we rely on Nagaitsev to calculate evolutions
+                if (turn % IBS_step == 0) or (turn == 1):  # recalculate the Nagaitsev integrals
+                    logger.trace("Calculating Nagaitsev integrals")
+                    IBS.calculate_integrals(  # this updates the IBS instance internal attributes
+                        Emit_x=turn_by_turn.epsilon_x[turn - 1],
+                        Emit_y=turn_by_turn.epsilon_y[turn - 1],
+                        Sig_M=turn_by_turn.sig_delta[turn - 1],
+                        BunchL=turn_by_turn.bunch_length[turn - 1],
+                    )
+                    logger.trace("Determining emittances evolution from Nagaitsev integrals")
+                    emit_x, emit_y, sig_m = IBS.emit_evol(
+                        Emit_x=turn_by_turn.epsilon_x[turn - 1],
+                        Emit_y=turn_by_turn.epsilon_y[turn - 1],
+                        Sig_M=turn_by_turn.sig_delta[turn - 1],
+                        BunchL=turn_by_turn.bunch_length[turn - 1],
+                        dt=dt,
+                    )
+                    logger.trace("Determining sigma_e and bunch_length from computed properties")
+                    sigma_e = sig_m * IBS.betar**2
+                    bunch_l = BunchLength(
+                        IBS.Circu,
+                        harmonic_number,
+                        IBS.EnTot,
+                        IBS.slip,
+                        sigma_e,
+                        IBS.beta_r,
+                        RF_voltage * 1e-3,
+                        energy_loss,
+                        IBS.Ncharg,
+                    )
+                    logger.trace("Updating records")
+                    turn_by_turn.bunch_length[turn] = bunch_l
+                    turn_by_turn.sig_delta[turn] = sig_m
+                    turn_by_turn.epsilon_x[turn] = emit_x
+                    turn_by_turn.epsilon_y[turn] = emit_y
 
-        if mode != "analytical":
-            sig_x = np.std(particles.x[particles.state > 0])
-            sig_y = np.std(particles.y[particles.state > 0])
-            sig_delta = np.std(particles.delta[particles.state > 0])
-            turn_by_turn["bl"][i] = np.std(particles.zeta[particles.state > 0])
-            turn_by_turn["sig_delta"][i] = sig_delta
-            turn_by_turn["eps_x"][i] = (sig_x**2 - (tw["dx"][0] * sig_delta) ** 2) / tw["betx"][0]
-            turn_by_turn["eps_y"][i] = sig_y**2 / tw["bety"][0]
-
-        if mode == "analytical":
-            if (i % IBS_step == 0) or (i == 1):
-                IBS.calculate_integrals(
-                    turn_by_turn["eps_x"][i - 1],
-                    turn_by_turn["eps_y"][i - 1],
-                    turn_by_turn["sig_delta"][i - 1],
-                    turn_by_turn["bl"][i - 1],
+            # ----- Calculating kicks ----- #
+            if (turn % IBS_step == 0) or (turn == 1):
+                logger.debug(
+                    f"Turn {turn} / {nturns}, {len(particles.x[particles.state > 0])} surviving particles"
                 )
-            Emit_x, Emit_y, Sig_M = IBS.emit_evol(
-                turn_by_turn["eps_x"][i - 1],
-                turn_by_turn["eps_y"][i - 1],
-                turn_by_turn["sig_delta"][i - 1],
-                turn_by_turn["bl"][i - 1],
-                dt,
-            )
+                logger.trace(f"At turn {turn}, re-calculating IBS {model.capitalize()} kick")
+                if model.lower() == "simple":
+                    IBS.calculate_simple_kick(particles)
+                elif model.lower() == "kinetic":
+                    IBS.calculate_kinetic_coefficients(particles)
 
-            Sigma_E = Sig_M * IBS.betar**2
-            BunchL = BunchLength(
-                IBS.Circu,
-                Harmonic_Num,
-                IBS.EnTot,
-                IBS.slip,
-                Sigma_E,
-                IBS.betar,
-                RF_Voltage * 1e-3,
-                Energy_loss,
-                IBS.Ncharg,
-            )
+            # ----- Applying relevant kick to particles ----- #
+            if model.lower() == "simple":
+                IBS.apply_simple_kick(particles)
+            elif model.lower() == "kinetic":
+                IBS.apply_kinetic_kick(particles)
 
-            turn_by_turn["bl"][i] = BunchL
-            turn_by_turn["sig_delta"][i] = Sig_M
-            turn_by_turn["eps_x"][i] = Emit_x
-            turn_by_turn["eps_y"][i] = Emit_y
+            # ----- Track 1 turn through line ----- #
+            line.track(particles)
 
-        elif mode == "kinetic":
-            if (i % IBS_step == 0) or (i == 1):
-                IBS.calculate_kinetic_coefficients(particles)
-            IBS.apply_kinetic_kick(particles)
-        elif mode == "simple":
-            if (i % IBS_step == 0) or (i == 1):
-                IBS.calculate_simple_kick(particles)
-            IBS.apply_simple_kick(particles)
+    # ----- Saving data to file ----- #
+    logger.debug("Saving recorded data to file")
+    np.savez(
+        outputdir / f"xsuite_{model.lower()}.npz",
+        epsilon_x=turn_by_turn.epsilon_x,
+        epsilon_y=turn_by_turn.epsilon_y,
+        sig_delta=turn_by_turn.sig_delta,
+        bunch_length=turn_by_turn.bunch_length,
+    )
 
-        line.track(particles)
-        # end = time.time()
-        # print(end - start)
 
-    Emitt = []
-    Emitt.append(turn_by_turn["eps_x"])
-    Emitt.append(turn_by_turn["eps_y"])
-    Emitt.append(turn_by_turn["sig_delta"])
-    Emitt.append(turn_by_turn["bl"])
+def line_from_madx(sequence_file: Path) -> xt.Line:
+    """Function to load the line from MAD-X (hardcoded behavior)."""
+    logger.debug("Loading line from MAD-X")
+    n_slice_per_element = 4
+    madx = Madx(stdout=False)
+    madx.call(sequence_file)
+    madx.command.beam(particle="positron", energy=2.86, bunched=True)
+    madx.command.use(sequence="RING")
+    madx.command.select(flag="MAKETHIN", slice_=n_slice_per_element, thick=False)
+    madx.command.select(flag="MAKETHIN", pattern="wig", slice_=1)
+    madx.command.makethin(sequence="RING", makedipedge=True)
+    madx.command.use(sequence="RING")
+    logger.debug("Converting MAD-X sequence to xtrack line")
+    return xt.Line.from_madx_sequence(madx.sequence.ring)
 
-    df = pd.DataFrame(np.array(Emitt).T, columns=["eps_x", "eps_y", "sig_delta", "bl"])
-    df.index.name = "Turn"
-    df.to_parquet(f"./output/xsuite_{mode}.parquet")
+
+def line_from_json(json_file: Path) -> xt.Line:
+    """Function to load the line directly from a JSON file."""
+    logger.debug("Loading line from MAD-X")
+    return xt.Line.from_json(json_file)
+
+
+if __name__ == "__main__":
+    main()
