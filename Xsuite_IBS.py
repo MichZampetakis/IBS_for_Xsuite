@@ -38,10 +38,10 @@ class Records:
 )
 @click.option(
     "--model",
-    type=click.Choice(["Simple", "Kinetic", "Nagaitsev"], case_sensitive=False),
+    type=click.Choice(["Simple", "Kinetic", "Analytical"], case_sensitive=False),
     show_default=True,
     default="Simple",
-    help="The IBS model to use.",
+    help="The IBS model to use. Simple of kinetic kicks, or analytical model based on Nagaitsev's integrals.",
 )
 @click.option(
     "--outputdir",
@@ -71,7 +71,7 @@ def main(nturns: int, sequence: Path, line: Path, model: str, outputdir: Path) -
     # ----- Prepare acceleration ----- #
     logger.info("Activating cavities")
     cavities = [element for element in line.elements if isinstance(element, xt.Cavity)]
-    logger.debug(f"Found {len(cavities)} to activate (lag = 180)")
+    logger.debug(f"Found {len(cavities)} cavity to activate (lag = 180)")
     for cavity in cavities:
         cavity.lag = 180
 
