@@ -176,7 +176,7 @@ def main(nturns: int, sequence: Path, line: Path, outputdir: Path) -> None:
                         IBS.EnTot,
                         IBS.slip,
                         sigma_e,
-                        IBS.beta_r,
+                        IBS.betar,
                         RF_voltage * 1e-3,
                         energy_loss,
                         IBS.Ncharg,
