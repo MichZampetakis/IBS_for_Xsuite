@@ -207,15 +207,15 @@ def main(nturns: int, sequence: Path, line: Path, outputdir: Path) -> None:
             # ----- Track 1 turn through line ----- #
             line.track(particles)
 
-    # ----- Saving data to file ----- #
-    logger.debug("Saving recorded data to file")
-    np.savez(
-        outputdir / f"xsuite_{model.lower()}.npz",
-        epsilon_x=turn_by_turn.epsilon_x,
-        epsilon_y=turn_by_turn.epsilon_y,
-        sig_delta=turn_by_turn.sig_delta,
-        bunch_length=turn_by_turn.bunch_length,
-    )
+        # ----- Saving data to file ----- #
+        logger.debug("Saving recorded data to file")
+        np.savez(
+            outputdir / f"xsuite_{model.lower()}.npz",
+            epsilon_x=turn_by_turn.epsilon_x,
+            epsilon_y=turn_by_turn.epsilon_y,
+            sig_delta=turn_by_turn.sig_delta,
+            bunch_length=turn_by_turn.bunch_length,
+        )
 
 
 def line_from_madx(sequence_file: Path) -> xt.Line:
