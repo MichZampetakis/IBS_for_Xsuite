@@ -135,7 +135,7 @@ def main(nturns: int, sequence: Path, line: Path, outputdir: Path) -> None:
         turn_by_turn.epsilon_y[0] = sig_y**2 / twiss["bety"][0]
 
         # ----- Tracking ----- #
-        logger.info(f"Stating tracking for {nturns}")
+        logger.info(f"Stating tracking for {nturns} turns")
         for turn in range(1, nturns):  # start at 1 here as we initialized first entry from created particles
             logger.trace("Computing particle properties")
 
