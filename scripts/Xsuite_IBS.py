@@ -1,3 +1,4 @@
+import sys
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -50,8 +51,11 @@ class Records:
     show_default=True,
     help="Folder in which to write the output data.",
 )
-def main(nturns: int, sequence: Path, line: Path, model: str, outputdir: Path) -> None:
+@click.option("-v", "--verbose", count=True, default=0, help="The verbosity level, which determines the logging level.")
+def main(nturns: int, sequence: Path, line: Path, model: str, outputdir: Path, verbose: int) -> None:
     """Main program flow."""
+    # ----- Adjust logging level ----- #
+    set_logging_level(verbose)
     # ----- Create xtrack Line ----- #
     logger.info("Creating Line for tracking")
     if not sequence and not line:
@@ -171,6 +175,13 @@ def line_from_json(json_file: Path) -> xt.Line:
     """Function to load the line directly from a JSON file."""
     logger.debug("Loading line from MAD-X")
     return xt.Line.from_json(json_file)
+
+
+def set_logging_level(verbosity: int) -> None:
+    logger.remove()
+    verbosity = 3 if verbosity > 3 else verbosity  # cap to 3, as we can't be more verbose
+    verbosity_to_level = {0: "WARNING", 1: "INFO", 2: "DEBUG", 3: "TRACE"}
+    logger.add(sys.stdout, level=verbosity_to_level[verbosity])
 
 
 if __name__ == "__main__":

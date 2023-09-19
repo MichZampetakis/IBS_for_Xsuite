@@ -1,20 +1,17 @@
-# IBS example: runs simple kick, kinetic theory and analytical
-import json
 import sys
 from dataclasses import dataclass
 from pathlib import Path
 
 import click
-import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
 import xobjects as xo
 import xpart as xp
 import xtrack as xt
 from cpymad.madx import Madx
 from loguru import logger
 
-from lib.IBSfunctions import *
+from lib.general_functions import BunchLength
+from lib.IBSfunctions import NagaitsevIBS
 
 
 @dataclass
@@ -48,8 +45,13 @@ class Records:
     show_default=True,
     help="Folder in which to write the output data.",
 )
-def main(nturns: int, sequence: Path, line: Path, outputdir: Path) -> None:
+@click.option(
+    "-v", "--verbose", count=True, default=0, help="The verbosity level, which determines the logging level."
+)
+def main(nturns: int, sequence: Path, line: Path, outputdir: Path, verbose: int) -> None:
     """Main program flow."""
+    # ----- Adjust logging level ----- #
+    set_logging_level(verbose)
     # ----- Create xtrack Line ----- #
     logger.info("Creating Line for tracking")
     if not sequence and not line:
@@ -119,6 +121,7 @@ def main(nturns: int, sequence: Path, line: Path, outputdir: Path) -> None:
         # emit.define_bins_width(particles, tw)
 
         # ----- Initialze Records at first turn ----- #
+        logger.trace("Initiating records")
         turn_by_turn = Records(
             epsilon_x=np.zeros(nturns, dtype=float),
             epsilon_y=np.zeros(nturns, dtype=float),
@@ -135,7 +138,7 @@ def main(nturns: int, sequence: Path, line: Path, outputdir: Path) -> None:
         turn_by_turn.epsilon_y[0] = sig_y**2 / twiss["bety"][0]
 
         # ----- Tracking ----- #
-        logger.info(f"Stating tracking for {nturns} turns")
+        logger.info(f"Starting tracking for {nturns} turns")
         for turn in range(1, nturns):  # start at 1 here as we initialized first entry from created particles
             logger.trace("Computing particle properties")
 
@@ -192,7 +195,7 @@ def main(nturns: int, sequence: Path, line: Path, outputdir: Path) -> None:
                 logger.debug(
                     f"Turn {turn} / {nturns}, {len(particles.x[particles.state > 0])} surviving particles"
                 )
-                logger.trace(f"At turn {turn}, re-calculating IBS {model.capitalize()} kick")
+                logger.trace(f"Turn {turn} / {nturns}, re-calculating IBS {model.capitalize()} kick")
                 if model.lower() == "simple":
                     IBS.calculate_simple_kick(particles)
                 elif model.lower() == "kinetic":
@@ -200,8 +203,10 @@ def main(nturns: int, sequence: Path, line: Path, outputdir: Path) -> None:
 
             # ----- Applying relevant kick to particles ----- #
             if model.lower() == "simple":
+                logger.trace("Applying simple kick")
                 IBS.apply_simple_kick(particles)
             elif model.lower() == "kinetic":
+                logger.trace("Applying kinetic kick")
                 IBS.apply_kinetic_kick(particles)
 
             # ----- Track 1 turn through line ----- #
@@ -238,6 +243,13 @@ def line_from_json(json_file: Path) -> xt.Line:
     """Function to load the line directly from a JSON file."""
     logger.debug("Loading line from MAD-X")
     return xt.Line.from_json(json_file)
+
+
+def set_logging_level(verbosity: int) -> None:
+    logger.remove()
+    verbosity = 3 if verbosity > 3 else verbosity  # cap to 3, as we can't be more verbose
+    verbosity_to_level = {0: "WARNING", 1: "INFO", 2: "DEBUG", 3: "TRACE"}
+    logger.add(sys.stdout, level=verbosity_to_level[verbosity])
 
 
 if __name__ == "__main__":
