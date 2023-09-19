@@ -140,9 +140,9 @@ def main(nturns: int, sequence: Path, line: Path, outputdir: Path, verbose: int)
         # ----- Tracking ----- #
         logger.info(f"Starting tracking for {nturns} turns")
         for turn in range(1, nturns):  # start at 1 here as we initialized first entry from created particles
-            logger.trace("Computing particle properties")
+            logger.trace(f"Turn {turn} / {nturns}, computing particle properties")
 
-            # Calculate properties, different if kicks or analytical
+            # ----- Calculate properties, different if kicks or analytical ----- #
             if model.lower() != "analytical":  # simple or kinetic
                 sig_x = np.std(particles.x[particles.state > 0])
                 sig_y = np.std(particles.y[particles.state > 0])

@@ -115,7 +115,7 @@ def main(nturns: int, sequence: Path, line: Path, model: str, outputdir: Path, v
     # ----- Tracking ----- #
     logger.info(f"Stating tracking for {nturns} turns")
     for turn in range(nturns):
-        logger.trace("Computing particle properties")
+        logger.trace(f"Turn {turn} / {nturns}, computing particle properties")
         sig_x = np.std(particles.x[particles.state > 0])
         sig_y = np.std(particles.y[particles.state > 0])
         sig_delta = np.std(particles.delta[particles.state > 0])
