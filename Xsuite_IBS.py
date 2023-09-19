@@ -95,7 +95,7 @@ def main(nturns: int, sequence: Path, line: Path, model: str, outputdir: Path) -
     twiss = line.twiss(particle_ref=p0)
 
     # ----- Initialize IBS ----- #
-    logger.info("Initializing Nagaitsev IBS class")
+    logger.info("Initializing IBS class")
     IBS = NagaitsevIBS()
     IBS.set_beam_parameters(particles)
     IBS.set_optic_functions(twiss)
