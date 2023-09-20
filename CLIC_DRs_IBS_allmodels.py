@@ -215,7 +215,7 @@ def main(nturns: int, sequence: Path, line: Path, outputdir: Path, verbose: int)
         # ----- Saving data to file ----- #
         logger.debug("Saving recorded data to file")
         np.savez(
-            outputdir / f"xsuite_{model.lower()}.npz",
+            outputdir / f"new_script_new_xsuite_{model.lower()}.npz",
             epsilon_x=turn_by_turn.epsilon_x,
             epsilon_y=turn_by_turn.epsilon_y,
             sig_delta=turn_by_turn.sig_delta,

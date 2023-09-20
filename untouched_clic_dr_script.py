@@ -199,4 +199,4 @@ for mode in ["kinetic", "simple", "analytical"]:
 
     df = pd.DataFrame(np.array(Emitt).T, columns=["eps_x", "eps_y", "sig_delta", "bl"])
     df.index.name = "Turn"
-    df.to_parquet(f"untouched_xsuite_{mode}.parquet")
+    df.to_parquet(f"outputs/old_script_new_xsuite_{mode}.parquet")
