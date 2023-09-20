@@ -9,9 +9,12 @@ from plotters import PARAMS, plot_emittances_and_momentum_spread_evolution
 plt.rcParams.update(PARAMS)
 
 # ----- Load Data ----- #
+
 kinetic = pd.read_parquet("../outputs/xsuite_kinetic.parquet")
 simple = pd.read_parquet("../outputs/xsuite_simple.parquet")
 analytical = pd.read_parquet("../outputs/xsuite_analytical.parquet")
+
+# ----- Plotting ----- #
 
 figure = plot_emittances_and_momentum_spread_evolution(
     kinetic.eps_x.to_numpy(),

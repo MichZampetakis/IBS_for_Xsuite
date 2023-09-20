@@ -9,6 +9,7 @@ from plotters import PARAMS, plot_emittances_and_momentum_spread_evolution
 plt.rcParams.update(PARAMS)
 
 # ----- Load Data ----- #
+
 with np.load("../outputs/xsuite_kinetic.npz") as data:
     kinetic_epsx = data["epsilon_x"]
     kinetic_epsy = data["epsilon_y"]
@@ -23,6 +24,8 @@ with np.load("../outputs/xsuite_analytical.npz") as data:
     analytical_epsx = data["epsilon_x"]
     analytical_epsy = data["epsilon_y"]
     analytical_sig_delta = data["sig_delta"]
+
+# ----- Plotting ----- #
 
 figure = plot_emittances_and_momentum_spread_evolution(
     kinetic_epsx,
