@@ -1,0 +1,142 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.version]
+path = "pyibs/version.py"
+
+[tool.hatch.build.targets.sdist]
+exclude = [
+  "/.github",
+  "/docs",
+  "/docker",
+  "/examples",
+  "/tests",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["pyibs"]
+
+[project]
+name = "pyibs"
+readme = "README.md"
+description = "Prototype Intra-Beam Scattering implementation for Xsuite."
+authors = [
+    {name = "Felix Soubelet", email = "felix.soubelet@cern.ch"},
+]
+license = "MIT"
+dynamic = ["version"]
+requires-python = ">=3.8"
+
+classifiers = [
+    "Development Status :: 2 - Pre-Alpha",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Natural Language :: English",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Scientific/Engineering :: Physics",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Typing :: Typed",
+]
+
+dependencies = [
+  "numpy >= 1.21",
+  "pandas >= 2.0",
+  "scipy >= 1.6",
+]
+
+[project.optional-dependencies]
+test = [
+  "pytest >= 7.0",
+  "pytest-cov >= 4.0",
+  "coverage[toml] >= 7.0",
+  "cpymad >= 1.14",
+]
+dev = [
+  "black >= 23.9",
+  "isort >= 5.10",
+  "ruff >= 0.0.290",
+]
+docs = [
+  "Sphinx >= 7.0",
+  "sphinx-rtd-theme >= 1.0",
+  "sphinx-issues >= 3.0",
+  "sphinx_copybutton < 1.0",
+  "sphinxcontrib-codeautolink < 1.0",
+]
+
+[project.urls]
+homepage = "https://github.com/fsoubelet/PyIBS"
+repository = "https://github.com/fsoubelet/PyIBS"
+documentation = "https://fsoubelet.github.io/PyIBS"
+
+# ----- Testing Configuration ----- #
+
+[tool.pytest.ini_options]
+addopts = "--mpl --cov-report=xml --cov-report term-missing --cov-config=pyproject.toml --cov=pyibs"
+testpaths = ["tests"]
+
+[tool.coverage.run]
+source = ["pyibs/"]
+
+[tool.coverage.report]
+ignore_errors = true
+omit = []
+precision = 2
+
+# ----- Dev Tools Configuration ----- #
+
+[tool.isort]
+atomic = true
+ensure_newline_before_comments = true
+filter_files = true
+force_grid_wrap = 0
+force_single_line = false
+include_trailing_comma = true
+known_first_party = "pyhdtoolkit"
+known_third_party = "pytest"
+line_length = 110
+lines_between_types = 1
+multi_line_output = 3
+use_parentheses = true
+profile = "black"
+
+[tool.black]
+line-length = 110
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | dist
+  | tests/.*/setup.py
+  | acc-models-lhc
+)/
+'''
+
+[tool.ruff]
+ignore = ["E501"]
+line-length = 110
+
+# Exclude a variety of commonly ignored directories.
+exclude = []
+
+# Allow unused variables when underscore-prefixed.
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+
+# Assume Python 3.8+.
+target-version = "py38"
