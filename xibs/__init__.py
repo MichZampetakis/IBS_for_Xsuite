@@ -9,6 +9,6 @@ __url__ = "https://github.com/fsoubelet/xibs"
 __version__ = version.VERSION
 __author__ = "Felix Soubelet"
 __author_email__ = "felix.soubelet@cern.ch"
-__license__ = "MIT"
+__license__ = "Apache-2.0"
 
 # TODO: decide what to expose as top-level

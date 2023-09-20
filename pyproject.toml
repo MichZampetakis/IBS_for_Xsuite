@@ -23,15 +23,16 @@ readme = "README.md"
 description = "Prototype Intra-Beam Scattering implementation for Xsuite."
 authors = [
     {name = "Felix Soubelet", email = "felix.soubelet@cern.ch"},
+    {name = "Michail Zampetakis", email = "michail.zampetakis@cern.ch"},
 ]
-license = "MIT"
+license = "Apache-2.0"
 dynamic = ["version"]
 requires-python = ">=3.8"
 
 classifiers = [
     "Development Status :: 2 - Pre-Alpha",
     "Intended Audience :: Science/Research",
-    "License :: OSI Approved :: MIT License",
+    "License :: OSI Approved :: Apache Software License",
     "Natural Language :: English",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3 :: Only",
