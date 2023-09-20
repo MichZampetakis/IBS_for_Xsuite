@@ -8,7 +8,7 @@ def version_info() -> str:
     import sys
 
     info = {
-        "IBS version": VERSION,
+        "XIBS version": VERSION,
         "Install path": pathlib.Path(__file__).resolve().parent,
         "Python version": f"{sys.version_info[0]}.{sys.version_info[1]}.{sys.version_info[2]}",
         "Python implementation": sys.version,

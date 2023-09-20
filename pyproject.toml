@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.version]
-path = "ibs/version.py"
+path = "xibs/version.py"
 
 [tool.hatch.build.targets.sdist]
 exclude = [
@@ -15,10 +15,10 @@ exclude = [
 ]
 
 [tool.hatch.build.targets.wheel]
-packages = ["ibs"]
+packages = ["xibs"]
 
 [project]
-name = "ibs"
+name = "xibs"
 readme = "README.md"
 description = "Prototype Intra-Beam Scattering implementation for Xsuite."
 authors = [
@@ -73,18 +73,18 @@ docs = [
 ]
 
 [project.urls]
-homepage = "https://github.com/fsoubelet/PyIBS"
-repository = "https://github.com/fsoubelet/PyIBS"
-documentation = "https://fsoubelet.github.io/PyIBS"
+homepage = "https://github.com/fsoubelet/xibs"
+repository = "https://github.com/fsoubelet/xibs"
+documentation = "https://fsoubelet.github.io/xibs"
 
 # ----- Testing Configuration ----- #
 
 [tool.pytest.ini_options]
-addopts = "--mpl --cov-report=xml --cov-report term-missing --cov-config=pyproject.toml --cov=ibs"
+addopts = "--mpl --cov-report=xml --cov-report term-missing --cov-config=pyproject.toml --cov=xibs"
 testpaths = ["tests"]
 
 [tool.coverage.run]
-source = ["ibs/"]
+source = ["xibs/"]
 
 [tool.coverage.report]
 ignore_errors = true
