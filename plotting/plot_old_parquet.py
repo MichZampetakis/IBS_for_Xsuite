@@ -10,9 +10,9 @@ plt.rcParams.update(PARAMS)
 
 # ----- Load Data ----- #
 
-kinetic = pd.read_parquet("../outputs/xsuite_kinetic.parquet")
-simple = pd.read_parquet("../outputs/xsuite_simple.parquet")
-analytical = pd.read_parquet("../outputs/xsuite_analytical.parquet")
+kinetic = pd.read_parquet("../outputs/old_script_old_xsuite_kinetic.parquet")
+simple = pd.read_parquet("../outputs/old_script_old_xsuite_simple.parquet")
+analytical = pd.read_parquet("../outputs/old_script_old_xsuite_analytical.parquet")
 
 # ----- Plotting ----- #
 

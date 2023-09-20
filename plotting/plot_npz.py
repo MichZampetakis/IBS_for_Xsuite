@@ -10,17 +10,17 @@ plt.rcParams.update(PARAMS)
 
 # ----- Load Data ----- #
 
-with np.load("../outputs/xsuite_kinetic.npz") as data:
+with np.load("../outputs/new_script_new_xsuite_kinetic.npz") as data:
     kinetic_epsx = data["epsilon_x"]
     kinetic_epsy = data["epsilon_y"]
     kinetic_sig_delta = data["sig_delta"]
 
-with np.load("../outputs/xsuite_simple.npz") as data:
+with np.load("../outputs/new_script_new_xsuite_simple.npz") as data:
     simple_epsx = data["epsilon_x"]
     simple_epsy = data["epsilon_y"]
     simple_sig_delta = data["sig_delta"]
 
-with np.load("../outputs/xsuite_analytical.npz") as data:
+with np.load("../outputs/new_script_new_xsuite_analytical.npz") as data:
     analytical_epsx = data["epsilon_x"]
     analytical_epsy = data["epsilon_y"]
     analytical_sig_delta = data["sig_delta"]
