@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.version]
-path = "pyibs/version.py"
+path = "ibs/version.py"
 
 [tool.hatch.build.targets.sdist]
 exclude = [
@@ -15,10 +15,10 @@ exclude = [
 ]
 
 [tool.hatch.build.targets.wheel]
-packages = ["pyibs"]
+packages = ["ibs"]
 
 [project]
-name = "pyibs"
+name = "ibs"
 readme = "README.md"
 description = "Prototype Intra-Beam Scattering implementation for Xsuite."
 authors = [
@@ -80,11 +80,11 @@ documentation = "https://fsoubelet.github.io/PyIBS"
 # ----- Testing Configuration ----- #
 
 [tool.pytest.ini_options]
-addopts = "--mpl --cov-report=xml --cov-report term-missing --cov-config=pyproject.toml --cov=pyibs"
+addopts = "--mpl --cov-report=xml --cov-report term-missing --cov-config=pyproject.toml --cov=ibs"
 testpaths = ["tests"]
 
 [tool.coverage.run]
-source = ["pyibs/"]
+source = ["ibs/"]
 
 [tool.coverage.report]
 ignore_errors = true

@@ -3,7 +3,7 @@ Exposes TfsDataFrame, read and write directly in tfs namespace, as well as the p
 """
 from . import version
 
-__title__ = "pyibs"
+__title__ = "ibs"
 __description__ = "Prototype Intra-Beam Scattering implementation for Xsuite."
 __url__ = "https://github.com/fsoubelet/PyIBS"
 __version__ = version.VERSION
