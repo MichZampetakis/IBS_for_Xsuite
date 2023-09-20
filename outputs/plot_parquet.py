@@ -1,3 +1,7 @@
+"""
+Script to plot Michalis' data which was saved to parquet.
+Can be compared to when making modifications.
+"""
 import matplotlib.pylab as plt
 import pandas as pd
 
@@ -22,9 +26,9 @@ analytical = pd.read_parquet("xsuite_analytical.parquet")
 figure, (epsx, epsy, sigdelta) = plt.subplots(1, 3, figsize=(16, 5))
 
 # ----- Horizontal Emittance ----- #
-epsx.plot(1e10 * kinetic["eps_x"].to_numpy(), label="kinetic")
-epsx.plot(1e10 * simple["eps_x"].to_numpy(), label="simple kick")
-epsx.plot(1e10 * analytical["eps_x"].to_numpy(), c="magenta", label="analytical")
+epsx.plot(1e10 * kinetic["eps_x"].to_numpy(), label="Kinetic")
+epsx.plot(1e10 * simple["eps_x"].to_numpy(), label="Simple")
+epsx.plot(1e10 * analytical["eps_x"].to_numpy(), c="magenta", label="Analytical")
 epsx.set_ylabel(r"$\varepsilon_x$ [$10^{-10}$m]")
 epsx.set_xlabel("Turns")
 
@@ -36,9 +40,9 @@ epsy.set_ylabel(r"$\varepsilon_y$ [$10^{-13}$m]")
 epsy.set_xlabel("Turns")
 
 # ----- Longitudinal Emittance ----- #
-sigdelta.plot(kinetic["sig_delta"].to_numpy() * 1e3)
-sigdelta.plot(simple["sig_delta"].to_numpy() * 1e3)
-sigdelta.plot(analytical["sig_delta"].to_numpy() * 1e3, c="magenta")
+sigdelta.plot(1e3 * kinetic["sig_delta"].to_numpy())
+sigdelta.plot(1e3 * simple["sig_delta"].to_numpy())
+sigdelta.plot(1e3 * analytical["sig_delta"].to_numpy(), c="magenta")
 sigdelta.set_ylabel(r"$\sigma_{\delta}$ [$10^{-3}$]")
 sigdelta.set_xlabel("Turns")
 
