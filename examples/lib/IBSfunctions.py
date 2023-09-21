@@ -135,7 +135,11 @@ class NagaitsevIBS:
                 x = (xi + li[n]) / 4.0
                 y = (yi + li[n]) / 4.0
                 z.append((z[n] + li[n]) / 4.0)
-                if (abs(x - xi) / x0 < differ) and (abs(y - yi) / y0 < differ) and (abs(z[n] - z[n + 1]) / z0 < differ):
+                if (
+                    (abs(x - xi) / x0 < differ)
+                    and (abs(y - yi) / y0 < differ)
+                    and (abs(z[n] - z[n + 1]) / z0 < differ)
+                ):
                     break
             lim = n
             mi = (xi + yi + 3 * z[lim]) / 5.0
@@ -227,7 +231,9 @@ class NagaitsevIBS:
 
     # Run if you want to evaluate the emittance evolution using Nagaitsev's Integrals, including Synchrotron Radiation.
     # Give damping times in [s], not turns!!!
-    def emit_evol_with_SR(self, Emit_x, Emit_y, Sig_M, BunchL, EQemitX, EQemitY, EQsigmM, tau_x, tau_y, tau_s, dt) -> Tuple[float, float, float]:
+    def emit_evol_with_SR(
+        self, Emit_x, Emit_y, Sig_M, BunchL, EQemitX, EQemitY, EQsigmM, tau_x, tau_y, tau_s, dt
+    ) -> Tuple[float, float, float]:
         """Computes the emittance evolutions from the Nagaitsev integrals, including the effects of synchrotron radiation."""
         Evolemx = (
             -EQemitX
@@ -288,22 +294,24 @@ class NagaitsevIBS:
     def apply_simple_kick(self, particles) -> None:
         """Applies the computed simple kick evolutions from Nagaitsev integrals (via method above) to the particle objects."""
         rho = self.line_density(40, particles)
-        Dkick_x = np.random.normal(loc=0, scale=self.DSx, size=particles.px[particles.state > 0].shape[0]) * np.sqrt(
-            rho
-        )
-        Dkick_y = np.random.normal(loc=0, scale=self.DSy, size=particles.py[particles.state > 0].shape[0]) * np.sqrt(
-            rho
-        )
-        Dkick_p = np.random.normal(loc=0, scale=self.DSz, size=particles.delta[particles.state > 0].shape[0]) * np.sqrt(
-            rho
-        )
+        Dkick_x = np.random.normal(
+            loc=0, scale=self.DSx, size=particles.px[particles.state > 0].shape[0]
+        ) * np.sqrt(rho)
+        Dkick_y = np.random.normal(
+            loc=0, scale=self.DSy, size=particles.py[particles.state > 0].shape[0]
+        ) * np.sqrt(rho)
+        Dkick_p = np.random.normal(
+            loc=0, scale=self.DSz, size=particles.delta[particles.state > 0].shape[0]
+        ) * np.sqrt(rho)
 
         particles.px[particles.state > 0] += Dkick_x
         particles.py[particles.state > 0] += Dkick_y
         particles.delta[particles.state > 0] += Dkick_p
 
     # ! ~~~~~~~~~~~~~~~~ Kinetic Kicks ~~~~~~~~~~~~~~~~~~ !
-    def Kinetic_Coefficients(self, Emit_x, Emit_y, Sig_M, BunchL) -> Tuple[float, float, float, float, float, float]:
+    def Kinetic_Coefficients(
+        self, Emit_x, Emit_y, Sig_M, BunchL
+    ) -> Tuple[float, float, float, float, float, float]:
         """Computes the kinetic coefficients based on emittances."""
         const = self.CoulogConst(Emit_x, Emit_y, Sig_M, BunchL)
         sigx = np.sqrt(self.bet_x * Emit_x + (self.eta_x * Sig_M) ** 2)
@@ -350,7 +358,7 @@ class NagaitsevIBS:
         # Fy = np.sum(Fyi * self.dels) * const / Emit_y
         # Dz = np.sum(Dzi * self.dels) * const / Sig_M**2 #* 2. for coasting
         # Fz = np.sum(Fzi * self.dels) * const / Sig_M**2 #* 2. for coasting
-        #TODO: figure out why no integration calculation here either
+        # TODO: figure out why no integration calculation here either
         Dx = np.sum(Dxi[:-1] * np.diff(self.posit)) * const / Emit_x
         Dy = np.sum(Dyi[:-1] * np.diff(self.posit)) * const / Emit_y
         Dz = np.sum(Dzi[:-1] * np.diff(self.posit)) * const / Sig_M**2
@@ -398,13 +406,22 @@ class NagaitsevIBS:
 
         # !---------- Friction ----------!
         particles.px[particles.state > 0] -= (
-            self.Fx * (particles.px[particles.state > 0] - np.mean(particles.px[particles.state > 0])) * dt * rho
+            self.Fx
+            * (particles.px[particles.state > 0] - np.mean(particles.px[particles.state > 0]))
+            * dt
+            * rho
         )  # kick units [1]
         particles.py[particles.state > 0] -= (
-            self.Fy * (particles.py[particles.state > 0] - np.mean(particles.py[particles.state > 0])) * dt * rho
+            self.Fy
+            * (particles.py[particles.state > 0] - np.mean(particles.py[particles.state > 0]))
+            * dt
+            * rho
         )  # kick units [1]
         particles.delta[particles.state > 0] -= (
-            self.Fz * (particles.delta[particles.state > 0] - np.mean(particles.delta[particles.state > 0])) * dt * rho
+            self.Fz
+            * (particles.delta[particles.state > 0] - np.mean(particles.delta[particles.state > 0]))
+            * dt
+            * rho
         )  # kick units [1]
 
         # !---------- Diffusion ----------!

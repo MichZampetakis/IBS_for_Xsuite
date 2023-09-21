@@ -53,7 +53,9 @@ class Records:
     show_default=True,
     help="Folder in which to write the output data.",
 )
-@click.option("-v", "--verbose", count=True, default=0, help="The verbosity level, which determines the logging level.")
+@click.option(
+    "-v", "--verbose", count=True, default=0, help="The verbosity level, which determines the logging level."
+)
 def main(nturns: int, sequence: Path, line: Path, model: str, outputdir: Path, verbose: int) -> None:
     """Main program flow."""
     # ----- Adjust logging level ----- #

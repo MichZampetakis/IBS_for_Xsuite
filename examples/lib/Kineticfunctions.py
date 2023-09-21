@@ -8,6 +8,7 @@ from scipy.constants import c, e, epsilon_0, hbar, m_p, physical_constants
 
 class KineticIBS:
     """A class to encapsulate IBS calculations according to the kinetic formalism."""
+
     def __init__(self, *args, **kwargs):
         # TODO: some work here, should probably initiate with a twiss or the line
         pass
@@ -36,7 +37,9 @@ class KineticIBS:
         self.mass_i = (self.E_rest * m_p) / E0p  # Ions Mass
         self.c_rad = (self.Ncharg * e) ** 2 / (4 * np.pi * epsilon_0 * c**2 * self.mass_i)
 
-    def set_optic_functions(self, position, dels, bet_x, bet_y, alf_x, alf_y, eta_x, eta_dx, eta_y, eta_dy) -> None:
+    def set_optic_functions(
+        self, position, dels, bet_x, bet_y, alf_x, alf_y, eta_x, eta_dx, eta_y, eta_dy
+    ) -> None:
         """
         Sets optics functions in instance from the provided xtrack.TwissTable object.
         Should be abstracted in a dataclass of its own
