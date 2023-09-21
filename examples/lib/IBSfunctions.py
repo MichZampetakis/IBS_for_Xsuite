@@ -1,12 +1,10 @@
-import sys
-
 from typing import Tuple
 
 import numpy as np
 import scipy
 import scipy.integrate as integrate
 
-from scipy.constants import c, hbar, m_e, physical_constants
+from scipy.constants import c, hbar, physical_constants
 from scipy.interpolate import interp1d
 
 from lib.general_functions import *

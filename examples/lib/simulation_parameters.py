@@ -1,6 +1,6 @@
 import numpy as np
 
-from scipy.constants import c, e, epsilon_0, hbar, m_p, physical_constants
+from scipy.constants import c, e, epsilon_0, m_p, physical_constants
 
 # TODO: this is not called elsewhere, can go into some constants module in pyibs
 
