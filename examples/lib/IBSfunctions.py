@@ -7,8 +7,6 @@ import scipy.integrate as integrate
 from scipy.constants import c, hbar, physical_constants
 from scipy.interpolate import interp1d
 
-from lib.general_functions import *
-
 # TODO: import from xsuite (in PyIBS) for type hints, and add actual type hints
 
 
@@ -107,7 +105,7 @@ class NagaitsevIBS:
 
         counts_normed, bin_edges = np.histogram(zeta, bin_edges, density=True)
         Rho_normed = np.interp(zeta, bin_centers, counts_normed * factor_distribution)
-        kick_factor_normed = np.mean(Rho_normed)
+        # kick_factor_normed = np.mean(Rho_normed)
 
         return Rho_normed
 
@@ -154,7 +152,7 @@ class NagaitsevIBS:
             for m in range(0, lim):
                 summ += 1 / (np.sqrt(z[m]) * (z[m] + li[m]) * 4**m)
 
-            Ern = 3 * En**6 / (1 - En) ** (3 / 2.0)
+            # Ern = 3 * En**6 / (1 - En) ** (3 / 2.0)
             rn = -Sn[2 - 2] ** 3 / 10.0 + 3 * Sn[3 - 2] ** 2 / 10.0 + 3 * Sn[2 - 2] * Sn[4 - 2] / 5.0
             R.append(
                 3 * summ

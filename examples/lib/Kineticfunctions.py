@@ -3,8 +3,6 @@ import scipy.integrate as integrate
 
 from scipy.constants import c, e, epsilon_0, hbar, m_p, physical_constants
 
-from lib.general_functions import *
-
 # TODO: import from xsuite (in PyIBS) for type hints, and add actual type hints
 
 
