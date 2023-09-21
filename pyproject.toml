@@ -1,21 +1,30 @@
+# ----- Build Information  ----- #
 [build-system]
+# The following is PEP-517 compliant, so other than 'hatch build' one can
+# just 'pip install .' or 'pip install <url>' and it would work too.
+# Also we can use cibuildwheel in our CI to target multiple platforms and it will
+# transparently use Hatch without any extra modification (see https://hatch.pypa.io/latest/build/)
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.version]
-path = "xibs/version.py"
+path = "xibs/version.py"  # Dynamically look here for the version info at build time
 
 [tool.hatch.build.targets.sdist]
+# Limit which files are included in the sdist (.tar.gz) asset, which is downloaded by the
+# user installing xibs when no wheel is available for their system, or when specifically required
 exclude = [
   "/.github",
   "/docs",
-  "/docker",
   "/examples",
   "/tests",
 ]
 
 [tool.hatch.build.targets.wheel]
+# Only thing that will be packaged into the built wheels
 packages = ["xibs"]
+
+# ----- Package Metadata ----- #
 
 [project]
 name = "xibs"
@@ -26,7 +35,7 @@ authors = [
     {name = "Michail Zampetakis", email = "michail.zampetakis@cern.ch"},
 ]
 license = "Apache-2.0"
-dynamic = ["version"]
+dynamic = ["version"]  # Dynamically look for the version info at build time
 requires-python = ">=3.8"
 
 classifiers = [
@@ -35,18 +44,21 @@ classifiers = [
     "License :: OSI Approved :: Apache Software License",
     "Natural Language :: English",
     "Operating System :: OS Independent",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3 :: Only",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: Implementation :: CPython",
+    "Intended Audience :: Science/Research",
     "Topic :: Scientific/Engineering",
     "Topic :: Scientific/Engineering :: Physics",
     "Topic :: Software Development :: Libraries :: Python Modules",
     "Typing :: Typed",
 ]
 
+# Our direct dependencies
 dependencies = [
   "numpy >= 1.21",
   "pandas >= 2.0",
@@ -54,6 +66,8 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+# Each table in here defines an 'extra' dependency
+# for e.g. 'pip install xibs[dev,test]'
 test = [
   "pytest >= 7.0",
   "pytest-cov >= 4.0",
@@ -81,16 +95,23 @@ documentation = "https://fsoubelet.github.io/xibs"
 # ----- Testing Configuration ----- #
 
 [tool.pytest.ini_options]
-addopts = "--mpl --cov-report=xml --cov-report term-missing --cov-config=pyproject.toml --cov=xibs"
+# Default pytest CLI options, will be overriden if given at the command line
 testpaths = ["tests"]
+addopts = [
+    "--cov-report=xml",  # Output coverage stats in xml file (for CodeClimate)
+    "--cov-report term-missing",  # Report lines not covered at end of pytest run
+    "--cov-config=pyproject.toml",  # Find coverage.py configuration in this file
+    "--cov=xibs",  # Report on coverage for this package only
+]
 
 [tool.coverage.run]
-source = ["xibs/"]
+source = ["xibs/"]  # Tell coverage.py to assess this only (redundant with '--cov=xibs'?)
 
 [tool.coverage.report]
-ignore_errors = true
+ignore_errors = true  # Ignore source code that can’t be found, emit a warning instead
 omit = []
-precision = 2
+skip_empty = true  # Don’t report files that have no executable code (e.g. __init__.py).
+precision = 2  # Number of digits after the decimal point to display for reported coverage 
 
 # ----- Dev Tools Configuration ----- #
 
@@ -101,7 +122,7 @@ filter_files = true
 force_grid_wrap = 0
 force_single_line = false
 include_trailing_comma = true
-known_first_party = "pyhdtoolkit"
+known_first_party = "xibs"
 known_third_party = "pytest"
 line_length = 110
 lines_between_types = 1
@@ -110,7 +131,9 @@ use_parentheses = true
 profile = "black"
 
 [tool.black]
+color = true
 line-length = 110
+target-version = ["py310"]
 include = '\.pyi?$'
 exclude = '''
 /(
@@ -130,14 +153,15 @@ exclude = '''
 '''
 
 [tool.ruff]
-ignore = ["E501"]
 line-length = 110
+ignore = ["E501"]  # E501 is handled by black
+exclude = ["tests"]  # Do not run on these directories.
 
-# Exclude a variety of commonly ignored directories.
-exclude = []
-
-# Allow unused variables when underscore-prefixed.
+# Allow unused variables when underscore-prefixed
 dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 
 # Assume Python 3.8+.
 target-version = "py38"
+
+[tool.ruff.pydocstyle]
+convention = "numpy"  # we follow numpy docstrings here
