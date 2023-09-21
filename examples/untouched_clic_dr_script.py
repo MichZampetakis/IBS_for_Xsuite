@@ -12,6 +12,7 @@ import pandas as pd
 import xobjects as xo
 import xpart as xp
 import xtrack as xt
+
 from cpymad.madx import Madx
 from scipy.constants import e as qe
 from scipy.constants import m_e, m_p

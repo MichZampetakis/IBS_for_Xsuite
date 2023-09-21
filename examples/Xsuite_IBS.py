@@ -1,4 +1,5 @@
 import sys
+
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -7,6 +8,7 @@ import numpy as np
 import xobjects as xo
 import xpart as xp
 import xtrack as xt
+
 from cpymad.madx import Madx
 from loguru import logger
 

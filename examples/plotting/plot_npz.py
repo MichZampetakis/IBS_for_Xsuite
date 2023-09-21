@@ -4,6 +4,7 @@ Can be a first quick comparision when making modifications.
 """
 import matplotlib.pylab as plt
 import numpy as np
+
 from plotters import PARAMS, plot_emittances_and_momentum_spread_evolution
 
 plt.rcParams.update(PARAMS)
