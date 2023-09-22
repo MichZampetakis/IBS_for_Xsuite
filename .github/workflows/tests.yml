@@ -20,7 +20,7 @@ jobs:
       matrix:
         os: [ubuntu-22.04, macos-latest, windows-latest]
         python-version: [3.8, 3.9, "3.10", "3.11"]
-      fail-fast: true # for now
+      fail-fast: false
 
     steps:
       - uses: actions/checkout@v4
@@ -32,7 +32,7 @@ jobs:
           cache: pip
           cache-dependency-path: '**/pyproject.toml'
 
-      - name: Clone acc-models-sps into test inputs folder
+      - name: Clone acc-models-sps into test inputs folder  # specify the branch, could also specify tag to make sure we are static
         run: git clone -b 2021 https://gitlab.cern.ch/acc-models/acc-models-sps.git --depth 1 tests/inputs/acc-models-sps/
 
       - name: Upgrade pip
