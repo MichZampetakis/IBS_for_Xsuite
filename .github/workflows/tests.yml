@@ -20,7 +20,7 @@ jobs:
       matrix:
         os: [ubuntu-22.04, macos-latest, windows-latest]
         python-version: [3.8, 3.9, "3.10", "3.11"]
-      fail-fast: false
+      fail-fast: true # for now
 
     steps:
       - uses: actions/checkout@v4
@@ -37,6 +37,9 @@ jobs:
 
       - name: Move acc-models-sps to test inputs folder
         run: mv acc-models-sps tests/inputs/
+
+      - name: Check the repo is in the right place
+        run: ls && ls tests/inputs
 
       - name: Upgrade pip
         run: python -m pip install --upgrade pip
