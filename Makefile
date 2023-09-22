@@ -15,7 +15,7 @@ P=\033[95m
 R=\033[31m
 Y=\033[33m
 
-.PHONY : help build clean docs format install lines lint typing alltests quicktests slowtests
+.PHONY : help build clean docs format install lines lint typing tests
 
 all: install
 
