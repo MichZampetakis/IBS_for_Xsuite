@@ -5,7 +5,7 @@ defaults:
   run:
     shell: bash
 
-on:  # Runs on any push event in a PR or any push event to master
+on:  # Runs on any push event in a PR or any push event to main
   pull_request:
   push:
     branches:
@@ -49,9 +49,9 @@ jobs:
           path: doc_build
           retention-days: 7
 
-      # Upload documentation to GitHub pages if on master
+      # Upload documentation to GitHub pages if on main
       - name: Upload documentation to gh-pages
-        if: success() && github.ref == 'refs/heads/master'  # only for pushes to master
+        if: success() && github.ref == 'refs/heads/main'  # only for pushes to main
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
