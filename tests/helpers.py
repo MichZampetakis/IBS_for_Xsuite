@@ -1,6 +1,8 @@
 """
 Utility functions (could be in cpymadtools at some point).
 """
+from typing import Tuple
+
 from cpymad.madx import Madx
 
 
@@ -51,7 +53,7 @@ def make_sps_thin(madx: Madx, sequence: str, slicefactor: int = 1, **kwargs) -> 
     madx.command.makethin(sequence=sequence, style=style, makedipedge=makedipedge)
 
 
-def get_madx_ibs_beam_size_growth_time(madx: Madx) -> tuple[float, float, float]:
+def get_madx_ibs_beam_size_growth_time(madx: Madx) -> Tuple[float, float, float]:
     """
     Calls IBS module in MAD-X and return the horizontal, vertical and longitudinal growth rates.
     CAREFUL: the beam and twiss commands MUST have been called before calling this function.
