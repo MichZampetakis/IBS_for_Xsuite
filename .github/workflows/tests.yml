@@ -33,9 +33,10 @@ jobs:
           cache-dependency-path: '**/pyproject.toml'
 
       - name: Clone acc-models-sps and move to inputs folder
-        run: |
-          git clone -b 2021 https://gitlab.cern.ch/acc-models/acc-models-sps --depth 1
-          mv acc-models-sps tests/inputs
+        run: git clone -b 2021 https://gitlab.cern.ch/acc-models/acc-models-sps.git --depth 1
+
+      - name: Move acc-models-sps to test inputs folder
+        run: mv acc-models-sps tests/inputs/
 
       - name: Upgrade pip
         run: python -m pip install --upgrade pip
