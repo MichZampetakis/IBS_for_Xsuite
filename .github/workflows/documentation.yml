@@ -9,7 +9,7 @@ on:  # Runs on any push event in a PR or any push event to master
   pull_request:
   push:
     branches:
-      - 'master'
+      - 'main'
 
 jobs:
   documentation:
