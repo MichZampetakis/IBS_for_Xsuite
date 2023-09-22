@@ -251,3 +251,7 @@ Temporary Items
 # Ruff
 .ruff_cache
 .ruff_cache/
+
+
+# ----- Test files and repos ----- #
+*/acc-models-sps/
