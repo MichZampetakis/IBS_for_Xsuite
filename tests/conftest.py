@@ -26,7 +26,7 @@ def matched_sps_lhc_ions_injection() -> Madx:
     A cpymad.Madx instance with loaded SPS sequence, lhc ions optics,
     and matched parameters.
     """
-    with Madx(stdout=True) as madx:
+    with Madx(stdout=False) as madx:
         # Parameters for matching later on
         qx, qy, dqx, dqy = 26.30, 26.25, -3.0e-9, -3.0e-9
 
