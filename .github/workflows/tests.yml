@@ -36,7 +36,7 @@ jobs:
         run: git clone -b 2021 https://gitlab.cern.ch/acc-models/acc-models-sps.git --depth 1
 
       - name: Move acc-models-sps to test inputs folder
-        run: mv acc-models-sps tests/inputs/
+        run: mv acc-models-sps/ tests/inputs/acc-models-sps/
 
       - name: Check the repo is in the right place
         run: ls && ls tests/inputs
