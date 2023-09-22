@@ -101,7 +101,7 @@ documentation = "https://fsoubelet.github.io/xibs"
 testpaths = ["tests"]
 addopts = [
     "--cov-report=xml",  # Output coverage stats in xml file (for CodeClimate)
-    "--cov-report term-missing",  # Report lines not covered at end of pytest run
+    "--cov-report=term-missing",  # Report lines not covered at end of pytest run
     "--cov-config=pyproject.toml",  # Find coverage.py configuration in this file
     "--cov=xibs",  # Report on coverage for this package only
 ]
