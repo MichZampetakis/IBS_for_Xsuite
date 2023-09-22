@@ -84,6 +84,8 @@ docs = [
   "sphinx-rtd-theme >= 1.0",
   "sphinx-issues >= 3.0",
   "sphinx_copybutton < 1.0",
+  "sphinxcontrib-bibtex >= 2.4",
+  "sphinx-prompt >= 1.5",
   "sphinx-codeautolink < 1.0",
 ]
 
@@ -164,4 +166,4 @@ dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 target-version = "py38"
 
 [tool.ruff.pydocstyle]
-convention = "numpy"  # we follow numpy docstrings here
+convention = "google"  # we follow Google docstrings here
