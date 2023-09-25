@@ -32,6 +32,7 @@ readme = "README.md"
 description = "Prototype Intra-Beam Scattering implementation for Xsuite."
 authors = [
     {name = "Felix Soubelet", email = "felix.soubelet@cern.ch"},
+    {name = "Elias Waagaard", email = "elias.walter.waagaard@cern.ch"},
     {name = "Michail Zampetakis", email = "michail.zampetakis@cern.ch"},
 ]
 license = "Apache-2.0"
