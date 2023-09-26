@@ -1,8 +1,8 @@
 """
 .. _xibs-analytical:
 
-Analytical IBS Calculations
----------------------------
+Emittances Evolutions
+---------------------
 
 Module with user-facing API to compute IBS-induced emittance evolutions from Nagaitsev integrals.
 """

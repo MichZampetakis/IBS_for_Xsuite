@@ -1,8 +1,8 @@
 """
 .. _xibs-nagaitsev:
 
-Analytical Nagaitsev Calculations
-----------------------------------
+Nagaitsev Integrals
+-------------------
 
 Module with functionality to perform analytical calculations according to Nagaitsev's formalism.
 A user-facing class is provided which computes the Nagaitsev integrals based on beam optics.
